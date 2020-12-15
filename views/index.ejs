@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>JSON uploader</title>
+		<style>
+			.hide {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<input type="file" name="" id="upload" />
+		<button id="send" class="hide">上傳</button>
+		<script>
+			const upload = document.getElementById('upload')
+			const send = document.getElementById('send')
+
+			let readyData = null
+
+			// 檔案類型檢查
+			function filePropsCheck(file) {
+				if (file) {
+					if (file.type !== 'application/json') {
+						alert('Only accept JSON file.')
+						this.value = null
+						return false
+					}
+				}
+
+				return true
+			}
+
+			// json 內容檢查
+			function jsonContentCheck(json) {
+				const data = JSON.parse(json)
+				if (data.data && data.date) {
+					return true
+				}
+				alert('Invalid JSON format.')
+				this.value = null
+				return false
+			}
+
+			// 上傳按鈕 toggle class
+			function displayToggle(dom, state) {
+				if (state === 'show' && dom.className === 'hide') {
+					dom.classList.remove('hide')
+				}
+				if (state === 'hide' && dom.className === '') {
+					dom.classList.add('hide')
+				}
+			}
+
+			upload.addEventListener('change', function () {
+				const _this = this
+				const file = _this.files[0]
+				const fileCheck = filePropsCheck.bind(_this)
+				const fileReady = fileCheck(file)
+
+				if (fileReady) {
+					let reader = new FileReader()
+					reader.addEventListener('load', function (e) {
+						let json = e.target.result
+						const jsonCheck = jsonContentCheck.bind(_this)
+						const jsonReady = jsonCheck(json)
+						if (jsonReady) {
+							readyData = json
+							displayToggle(send, 'show')
+						}
+					})
+					reader.readAsText(file)
+				} else {
+					displayToggle(send, 'hide')
+				}
+			})
+
+			send.addEventListener('click', function () {
+				const endpoint = '/update'
+				console.log(JSON.parse(readyData))
+
+				fetch(endpoint, {
+					method: 'POST',
+					headers: {
+						Accept: 'application/json',
+						'Content-Type': 'application/json'
+					},
+					body: readyData
+				})
+					.then(res => res.text())
+					.then(data => console.log(data))
+			})
+		</script>
+	</body>
+</html>
