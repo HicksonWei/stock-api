@@ -1,5 +1,4 @@
 const express = require('express')
-const fetch = require('node-fetch')
 const { Octokit } = require('@octokit/core')
 const data = require('./data/stock.json')
 require('dotenv').config()
@@ -15,8 +14,6 @@ const port = process.env.PORT || 5000
 app.set('view engine', 'ejs')
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
-
-app.listen(port)
 
 app.get('/', (req, res) => {
 	res.render('index')
@@ -50,3 +47,5 @@ app.post('/update', async (req, res) => {
 		console.log(err)
 	}
 })
+
+app.listen(port)
