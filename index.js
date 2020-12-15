@@ -1,7 +1,12 @@
 const express = require('express')
 const fetch = require('node-fetch')
+const { Octokit } = require('@octokit/core')
 const data = require('./data/stock.json')
 require('dotenv').config()
+
+const octokit = new Octokit({
+	auth: process.env.GITHUB_TOKEN
+})
 
 const app = express()
 
@@ -22,21 +27,26 @@ app.get('/all', (req, res) => {
 })
 
 app.post('/update', async (req, res) => {
-	console.log(req.body)
-	const post = await fetch(
-		'https://api.github.com/repos/hicksonwei/stock-api/contents/data/stock.json',
-		{
-			method: 'POST',
-			body: {
-				owner: 'hicksonwei',
+	try {
+		const { data } = await octokit.request(
+			'GET https://api.github.com/repos/HicksonWei/stock-api/contents/data/stock.json'
+		)
+
+		console.log('request', data.sha)
+		const response = await octokit.request(
+			'PUT https://api.github.com/repos/HicksonWei/stock-api/contents/data/stock.json',
+			{
+				owner: 'HicksonWei',
 				repo: 'stock-api',
 				path: 'data/stock.json',
 				message: `Data ${req.body.date} Update`,
-				content: JSON.stringify(req.body)
+				content: Buffer.from(JSON.stringify(req.body)).toString('base64'),
+				sha: data.sha
 			}
-		}
-	)
-	const response = await post.json()
+		)
 
-	res.send(response)
+		res.send(response)
+	} catch (err) {
+		console.log(err)
+	}
 })

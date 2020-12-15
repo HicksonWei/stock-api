@@ -78,7 +78,6 @@
 
 			send.addEventListener('click', function () {
 				const endpoint = '/update'
-				console.log(JSON.parse(readyData))
 
 				fetch(endpoint, {
 					method: 'POST',
@@ -88,8 +87,16 @@
 					},
 					body: readyData
 				})
-					.then(res => res.text())
-					.then(data => console.log(data))
+					.then(res => res.json())
+					.then(data => {
+						console.log(data)
+						upload.value = null
+						alert('上傳成功!')
+					})
+					.catch(err => {
+						console.log(err)
+						alert(`上傳失敗: ${err}`)
+					})
 			})
 		</script>
 	</body>
