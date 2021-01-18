@@ -1,5 +1,6 @@
 const express = require('express')
 const { Octokit } = require('@octokit/core')
+const cors = require('cors')
 const path = require('path')
 const data = require('./data/stock.json')
 require('dotenv').config()
@@ -13,6 +14,7 @@ const app = express()
 const port = process.env.PORT || 5000
 
 app.use(express.json())
+app.use(cors())
 
 app.get('/', (req, res) => {
 	res.sendFile(path.join(__dirname + '/views/index.html'))
